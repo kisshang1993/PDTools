@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/font"/>
+    <qresource prefix="/skin">
+        <file>white.qss</file>
+    </qresource>
+    <qresource prefix="/pixmap">
+        <file>images/airwave.png</file>
+        <file>images/arrowBottom.png</file>
+        <file>images/close.png</file>
+        <file>images/devices.png</file>
+        <file>images/favicon.ico</file>
+        <file>images/meluxlogo.png</file>
+        <file>images/search.png</file>
+        <file>images/visionx.png</file>
+    </qresource>
+</RCC>
