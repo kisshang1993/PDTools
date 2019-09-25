@@ -28,9 +28,6 @@
    <property name="styleSheet">
     <string notr="true">font-size:13px;</string>
    </property>
-   <property name="inputMask">
-    <string>000.000.000.000</string>
-   </property>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -281,7 +278,7 @@ color: red;</string>
     <rect>
      <x>25</x>
      <y>295</y>
-     <width>221</width>
+     <width>141</width>
      <height>20</height>
     </rect>
    </property>
@@ -290,6 +287,25 @@ color: red;</string>
    </property>
    <property name="text">
     <string>MAC:00-00-00-00-00-00</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="local_ip">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>295</y>
+     <width>141</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color:#888;</string>
+   </property>
+   <property name="text">
+    <string>IP:0.0.0.0</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

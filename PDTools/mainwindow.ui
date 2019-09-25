@@ -170,6 +170,7 @@
     <addaction name="infomation"/>
     <addaction name="checkUpdate"/>
     <addaction name="aboutQt"/>
+    <addaction name="action_U"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -195,6 +196,9 @@
    <property name="text">
     <string>检查更新(&amp;U)</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="aboutQt">
    <property name="text">
@@ -204,6 +208,11 @@
   <action name="action">
    <property name="text">
     <string>配置文件(&amp;S)</string>
+   </property>
+  </action>
+  <action name="action_U">
+   <property name="text">
+    <string>更新地址(&amp;U)</string>
    </property>
   </action>
  </widget>

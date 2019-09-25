@@ -12,6 +12,7 @@ Description: 扫描列表
 #include <QListWidget>
 #include <QUdpSocket>
 #include <QCloseEvent>
+#include <QSettings>
 #include <QTimer>
 #include <QMessageBox>
 #include "util.h"
@@ -29,6 +30,8 @@ public:
     ~BoardCastListWidget();
     //初始化列表(构造)
     void initListWidget(bool withCheckState = false);
+    //隐藏已连接地址
+    void hideConnected(QString currentIP);
     //重新搜索
     void rescanDevices();
     //获取选择列
@@ -62,6 +65,10 @@ private:
     QListWidget *devicesList;
     //是否含选择框标记
     bool checkState;
+    //隐藏已经连接的主机地址
+    bool isHideConnected = false;
+    //已连接的主机地址
+    QString connectedIP;
     //UDP Socket
     QUdpSocket *broadcastSocket;
     //UDP广播端口
@@ -78,6 +85,10 @@ private:
     QStringList *scanChangeList;
     //检测到的有效设备保存列表
     QList<QString> *detectDevices;
+    //广播地址
+    QString boardcastAddress;
+    //本机IP
+    QString configLocalIP;
 };
 
 #endif // BOARDCASTLISTWIDGET_H

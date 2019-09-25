@@ -27,12 +27,12 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     //申请共享内存，应用程序唯一标识
-    QSharedMemory singleton(a.applicationName());
-    if(!singleton.create(1))
-    {
-        QMessageBox::warning(NULL, "警告", "PDTools当前已经有一个实例正在运行！");
-        return false;
-    }
+//    QSharedMemory singleton(a.applicationName());
+//    if(!singleton.create(1))
+//    {
+//        QMessageBox::warning(NULL, "警告", "PDTools当前已经有一个实例正在运行！");
+//        return false;
+//    }
     //全局字体
     QFont font;
     font.setFamily("Microsoft YaHei");

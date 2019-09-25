@@ -16,6 +16,16 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui(new Ui::LoginDialog)
 {
     ui->setupUi(this);
+    //读取配置文件
+    QFile cfg("config.ini");
+    if(!cfg.exists())
+    {
+        QMessageBox::critical(NULL, "错误", "缺失配置文件！请检查目录下是否存在config.ini");
+        return;
+    }
+    QSettings *config = new QSettings("config.ini", QSettings::IniFormat);
+    configLocalIP = config->value("Global/localIP").toString();
+
     //初始化部分元素
     TitleBar *titleBar = new TitleBar(this);
     ui->timeoutLabel->setHidden(true);
@@ -30,7 +40,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->visionx_logo->setPixmap(QPixmap::fromImage(Util::ScaleImage2Label(QImage(":/pixmap/images/visionx.png"), ui->visionx_logo)));
     //实例化扫描列表
     boardCastListWidget = new BoardCastListWidget(this);
-    qDebug() << ui->groupBox->geometry();
+
     boardCastListWidget->setGeometry(ui->groupBox->geometry().x(),
                                      ui->groupBox->geometry().y()+13,
                                      ui->groupBox->geometry().width(),
@@ -41,6 +51,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     //ui->connect_btn->setDisabled(true);
     //ui->adbconnectBtn->setDisabled(true);
     ui->mac->setText(QString("MAC: %1").arg(Util::getHostMacAddress()));
+    ui->local_ip->setText(QString("IP: %1").arg(configLocalIP == "" ? Util::getHostIpAddress() : configLocalIP));
+
 #if TESTMODE > 0
     ui->title->setText("DEBUG MODE");
     ui->title->setStyleSheet("color: #F00");

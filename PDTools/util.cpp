@@ -279,12 +279,12 @@ void Util::checkUpdateByClient(QString software)
 
     QString vc12upclt = "http://192.168.0.230:8850/static/softwares/system/vc12/updateClient.exe";
     QFile updateClient("updateClient.exe");
-    if(!updateClient.exists())
-    {
-        DownLoadFile *download = new DownLoadFile();
-        download->getFile(vc12upclt, true, false);
-        delete download;
-    }
+//    if(!updateClient.exists())
+//    {
+//        DownLoadFile *download = new DownLoadFile();
+//        download->getFile(vc12upclt, true, false);
+//        delete download;
+//    }
     if(updateClient.exists())
     {
         QString client_path = qApp->applicationDirPath() + "/updateClient.exe";
@@ -325,7 +325,7 @@ void Util::checkUpdateByClient(QString software)
     }
     else
     {
-        QMessageBox::critical(nullptr, "下载失败", "因缺少更新器<font color='red'>updateClient.exe</font>程序无法自动更新，并且尝试下载更新器也不成功，请手动下载更新器<br><a href='"+vc12upclt+"'>"+vc12upclt+"</a><br>下载后置于程序目录并重新启动程序。");
+        QMessageBox::critical(nullptr, "下载失败", "因缺少更新器<font color='red'>updateClient.exe</font>程序无法自动更新，请手动下载更新器(需高德办公室内网环境)<br><a href='"+vc12upclt+"'>"+vc12upclt+"</a><br>下载后置于程序目录并重新启动程序。");
         return;
     }
 
@@ -430,6 +430,7 @@ void Util::getSoftwareInfomation()
     infomationDialog->setWindowTitle("软件信息");
     infomationDialog->setStyleSheet("font-size:14px;padding-left:20px");
     infomationDialog->setFixedSize(240, 180);
+    infomationDialog->setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);
     QVBoxLayout *vbox = new QVBoxLayout(infomationDialog);
     vbox->addWidget(new QLabel(QString("软件名称: %1").arg(qApp->applicationDisplayName())));
     QString version_str = QString("当前版本: %1").arg(Util::ver2str(Util::getVersionFromDAT()));
@@ -554,11 +555,11 @@ QString Util::getHostIpAddress()
     QString strIpAddress;
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
     // 获取第一个本主机的IPv4地址
-    //qDebug() << ipAddressesList;
+
     int nListSize = ipAddressesList.size();
     for (int i = 0; i < nListSize; ++i)
     {
-        if(ipAddressesList.at(i).toString().contains("192.168")) {
+        if(ipAddressesList.at(i).toString().contains("192.168") || ipAddressesList.at(i).toString().contains("10.0")) {
             strIpAddress = ipAddressesList.at(i).toString();
             break;
         }
@@ -721,12 +722,12 @@ void CheckUpdate::generateUpdateScript()
             //
             QString vc12upclt = "http://192.168.0.230:8850/static/softwares/system/vc12/updateClient.exe";
             QFile updateClient("updateClient.exe");
-            if(!updateClient.exists())
-            {
-                DownLoadFile *download = new DownLoadFile();
-                download->getFile(vc12upclt, true, false);
-                delete download;
-            }
+//            if(!updateClient.exists())
+//            {
+//                DownLoadFile *download = new DownLoadFile();
+//                download->getFile(vc12upclt, true, false);
+//                delete download;
+//            }
             if(updateClient.exists())
             {
                 QProcess updateTask;
@@ -735,7 +736,7 @@ void CheckUpdate::generateUpdateScript()
             }
             else
             {
-                QMessageBox::critical(nullptr, "下载失败", "因缺少更新器<font color='red'>updateClient.exe</font>程序无法自动更新，并且尝试下载更新器也不成功，请手动下载更新器<br><a href='"+vc12upclt+"'>"+vc12upclt+"</a><br>下载后置于程序目录并手动运行updateClient.exe以更新程序。");
+                QMessageBox::critical(nullptr, "下载失败", "因缺少更新器<font color='red'>updateClient.exe</font>程序无法自动更新，请手动下载更新器(高德办公室内网环境下)<br><a href='"+vc12upclt+"'>"+vc12upclt+"</a><br>下载后置于程序目录并手动运行updateClient.exe以更新程序。");
                 return;
             }
         }
@@ -981,6 +982,7 @@ void DownLoadFile::replyFinished(QNetworkReply *)
     {
         file->remove();
         QMessageBox::critical(NULL, "下载失败", "Failed!!!");
+        return;
     }
 }
 

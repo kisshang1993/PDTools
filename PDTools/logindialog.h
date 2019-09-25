@@ -67,6 +67,8 @@ private:
     QTcpSocket *socket;
     //扫描列表实例
     BoardCastListWidget *boardCastListWidget;
+    //本机IP
+    QString configLocalIP;
 };
 
 #endif // LOGINDIALOG_H

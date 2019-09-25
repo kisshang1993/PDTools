@@ -34,6 +34,7 @@ Description: 主窗口
 #include <QRadioButton>
 #include <QTcpSocket>
 #include <QHostAddress>
+#include <QDesktopServices>
 #include <QSpinBox>
 #include <QMap>
 #include <QComboBox>
@@ -154,6 +155,8 @@ private slots:
     //FTP 上传进度 槽函数
     void loadFTPProgress(qint64 bytesSent, qint64 bytesTotal);
 
+    void on_action_U_triggered();
+
 protected:
     //重写关闭事件
     void closeEvent(QCloseEvent *event);
@@ -220,7 +223,10 @@ private:
     QProgressBar *uploadFirmwareProgressBar;
     //上传固件 状态
     bool uploadStatus;
-
+    //上传固件 上次选的的路径
+    QString uploadBeforePath = "";
+    //当前连接
+    QString connectedIP;
 };
 
 #endif // MAINWINDOW_H

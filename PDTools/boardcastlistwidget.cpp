@@ -20,13 +20,27 @@ BoardCastListWidget::BoardCastListWidget(QWidget *parent) : QWidget(parent)
     scanChangeList->append("扫描中..");
     scanChangeList->append("扫描中...");
 
+    //读取配置文件
+    QFile cfg("config.ini");
+    if(!cfg.exists())
+    {
+        QMessageBox::critical(NULL, "错误", "缺失配置文件！请检查目录下是否存在config.ini");
+        return;
+    }
+    QSettings *config = new QSettings("config.ini", QSettings::IniFormat);
+    boardcastAddress = config->value("Global/boardcastAddress").toString();
+    configLocalIP = config->value("Global/localIP").toString();
+
+
     //获取本机IP与MAC
     QString localIP = Util::getHostIpAddress();
+
     QString localMAC = Util::getHostMacAddress();
     //UDP Socket 实例化
     broadcastPort = 18000;
     broadcastSocket = new QUdpSocket(this);
-    broadcastSocket->bind(QHostAddress(localIP));
+
+    broadcastSocket->bind(QHostAddress(configLocalIP == "" ? localIP : configLocalIP));
     broadcastSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, 0);//禁止本机接收
     //计时器实例化
     broadcastTimer = new QTimer(this);
@@ -58,6 +72,16 @@ BoardCastListWidget::~BoardCastListWidget()
 {
     broadcastTimer->stop();
     scanChangeTimer->stop();
+}
+
+/**
+ * @brief 隐藏已连接的主机地址
+ * @param currentIP 已连接的主机地址
+ */
+void BoardCastListWidget::hideConnected(QString currentIP)
+{
+    isHideConnected = true;
+    connectedIP = currentIP;
 }
 
 /**
@@ -197,7 +221,7 @@ void BoardCastListWidget::broadcastDevices()
     pkg.check = crc;
     //字节流
     QByteArray message = structToStream(pkg);
-    broadcastSocket->writeDatagram(message, message.size(),  QHostAddress::Broadcast, broadcastPort);
+    broadcastSocket->writeDatagram(message, message.size(),  boardcastAddress == "" ? QHostAddress::Broadcast : QHostAddress(boardcastAddress), broadcastPort);
     //qDebug() << "boarding...";
 }
 
@@ -271,6 +295,8 @@ void BoardCastListWidget::hasDevicesRespone()
         QString resPort = resIPObj["port"].toVariant().toString();
         QString resDesc = resIPObj["desc"].toString();
 
+        //隐藏已连接
+        if(isHideConnected && resIP == connectedIP) continue;
         if(!resIP.isEmpty() && !resPort.isEmpty()) //数据有效
         {
             QString ipAndPort = QString("%1:%2").arg(resIP).arg(resPort);

@@ -824,6 +824,7 @@ void MainWindow::initTools(const QByteArray &initJsonBytes)
         statusBartext = QString("已连接至ADB设备(%1)").arg(initObj["DeviceName"].toString());
     }else {
         statusBartext = QString("已连接至%1:%2 (%3)").arg(socket->peerAddress().toString()).arg(socket->peerPort()).arg(initObj["DeviceName"].toString());
+        connectedIP = socket->peerAddress().toString();
     }
     QLabel *statusBarLabel = new QLabel(statusBartext);
     statusBarLabel->setStyleSheet("margin-left:5px;color: #004EA1");
@@ -971,7 +972,6 @@ void MainWindow::socketReadData()
 {
     //缓冲区内容长度
     int recvLen = socket->bytesAvailable();
-    //qDebug() << "recvLen" << recvLen;
     //是否需要分包读取
     if (isTcpRecvHeadOk == false)
     {
@@ -991,7 +991,7 @@ void MainWindow::socketReadData()
             pkgLen += (uchar)readPackageHead[4];
             pkgLen = pkgLen << 8;
             pkgLen += (uchar)readPackageHead[5];
-            //qDebug() << pkgLen;
+            //qDebug() << "PkgLen:" << pkgLen;
             crcLen = pkgLen;
             //是否读完
             isTcpRecvHeadOk = true;
@@ -1015,12 +1015,20 @@ void MainWindow::socketReadData()
                     else
                     {
                         qDebug("CRC校验失败: 长度：%d 返回：%x 计算：%x",crcLen, (uchar)readPackageHead[i+1], Util::crc8((unsigned char*)tcpRecvBlock.data(), crcLen));
+                        tcpRecvBlock.clear();
+                        crcLen = 0;
+                        pkgLen = 0;
+                        break;
                     }
                     isTcpRecvHeadOk = false;
                     break;
                 }
 
             }
+        }
+        else
+        {
+            qDebug("INVAILD HEAD, DROP. [0]: %x", readPackageHead[0]);
         }
         //释放
         free(readPackageHead);
@@ -1049,6 +1057,10 @@ void MainWindow::socketReadData()
                 else
                 {
                     qDebug("CRC校验失败: 长度：%d 返回：%x 计算：%x",crcLen, (uchar)readPackageBody[i+1], Util::crc8((unsigned char*)tcpRecvBlock.data(), crcLen));
+                    tcpRecvBlock.clear();
+                    crcLen = 0;
+                    pkgLen = 0;
+                    break;
                 }
             }
 
@@ -1081,7 +1093,6 @@ void MainWindow::displaSystemInfo()
  */
 void MainWindow::parseRecvData()
 {
-    //sendRespones();
     //数据长度
     int recvLen = tcpRecvBlock.size();
     //解析命令
@@ -1096,6 +1107,7 @@ void MainWindow::parseRecvData()
 
     case COMMAND::IMAGES_STREAM://图片
     {
+        sendRespones();
         char *tcpRecvChar, *imgData;
         char type;
         int width, height;
@@ -1150,6 +1162,11 @@ void MainWindow::parseRecvData()
             QMessageBox::critical(this, "错误", errorMsg);
             return;
         }
+        else
+        {
+            QMessageBox::information(this, "成功", "传输成功");
+            return;
+        }
         break;
     }
     case COMMAND::FIRMWARE_START: //准备上传
@@ -1200,7 +1217,7 @@ void MainWindow::parseRecvData()
 void MainWindow::sendRespones()
 {
     sendRequest(COMMAND::RESPONE);
-    qDebug() << "send respones";
+    //qDebug() << "send respones";
 }
 
 /**
@@ -1222,6 +1239,7 @@ void MainWindow::sendRequest(const char *body, COMMAND cmd)
     pkg.body = (char*)body; //内容
     pkg.check = Util::crc8((unsigned char*)body, lengh); //校验
     int state = socket->write(structToStream(pkg)); //发送
+    qDebug() << "Send Size:" << state;
     if(state < 0) //发送失败
         qDebug() << "TCP发送失败, 设备未连接";
     //刷新缓冲区
@@ -1315,8 +1333,8 @@ QByteArray MainWindow::structToStream(pd_Package pkg)
     lengh += pkg.len[3];
     out.writeRawData((char*)pkg.body, lengh);
     out << (uchar)pkg.check;
-
     qDebug() << "sendBlock：size:" << sendBlock.size() << "body:" << sendBlock.toHex();
+
     return sendBlock;
 }
 
@@ -1497,7 +1515,7 @@ void MainWindow::saveJsonToFile()
 {
     //序列化JSON对象
     QByteArray jsonByte= QJsonDocument(jsonUiObj).toJson(QJsonDocument::Compact);
-    QString filename = QString("%1.json").arg(ui->jsonSelectComboBox->currentText());
+    QString filename = QString("%1").arg(ui->jsonSelectComboBox->currentText());
     //保存位置
     QString filePath = QFileDialog::getSaveFileName(this, "请选择保存位置", "./"+filename);
     if(filePath.isEmpty()) return;
@@ -1570,9 +1588,10 @@ void MainWindow::on_action_triggered()
 void MainWindow::uploadFirmware()
 {
     //选择文件
-    selectFilePath = QFileDialog::getOpenFileName(this, "选择固件", "", "Firmware (*.zip)");
+    selectFilePath = QFileDialog::getOpenFileName(this, "选择固件", uploadBeforePath, "Firmware (*.zip)");
     if(!selectFilePath.isEmpty())
     {
+        uploadBeforePath = selectFilePath.left(selectFilePath.lastIndexOf("/"));
         QString fileName = selectFilePath.right(selectFilePath.size() - selectFilePath.lastIndexOf("/") - 1);
         if(!fileName.toLower().contains("update") && !fileName.toLower().contains("airwave"))
         {
@@ -1614,6 +1633,7 @@ void MainWindow::syncConfigDevices()
     boardCastListWidget = new BoardCastListWidget(gp);
     boardCastListWidget->setGeometry(5, 15, gp->width()-10, gp->height()-20);
     boardCastListWidget->initListWidget(true);
+    boardCastListWidget->hideConnected(connectedIP);
     QWidget *buttons = new QWidget(syncWidget);
     buttons->setGeometry(padding, height - 40, syncWidget->width()-padding*2, 30);
     QHBoxLayout *buttonsLayout = new QHBoxLayout(buttons);
@@ -1864,4 +1884,9 @@ void MainWindow::on_searchTreelineEdit_textChanged(const QString &arg1)
     {
         selectionModel->select(searchItems[0]->index(), QItemSelectionModel::SelectCurrent);
     }
+}
+
+void MainWindow::on_action_U_triggered()
+{
+    QDesktopServices::openUrl(QUrl("http://192.168.0.230:8850/softwares/?query_id=6"));
 }
