@@ -57,7 +57,11 @@ LoginDialog::LoginDialog(QWidget *parent) :
     ui->title->setText("DEBUG MODE");
     ui->title->setStyleSheet("color: #F00");
 #endif
-
+    QPropertyAnimation *animation = new QPropertyAnimation(this, "windowOpacity");
+    animation->setDuration(200);
+    animation->setStartValue(0);
+    animation->setEndValue(1);
+    animation->start();
 }
 
 /**
@@ -138,7 +142,7 @@ void LoginDialog::on_connect_btn_clicked()
     socket->connectToHost(ui->ip_input->text(), ui->port_input->text().toInt());
     if(!socket->waitForConnected(2000))
     {
-        QMessageBox::critical(this, "error", "TCP连接失败，请重试");
+        QMessageBox::critical(this, "error", "TCP连接失败，请重试\n"+socket->errorString());
         boardCastListWidget->rescanDevices();
         return;
     }

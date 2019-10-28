@@ -40,7 +40,8 @@ BoardCastListWidget::BoardCastListWidget(QWidget *parent) : QWidget(parent)
     broadcastPort = 18000;
     broadcastSocket = new QUdpSocket(this);
 
-    broadcastSocket->bind(QHostAddress(configLocalIP == "" ? localIP : configLocalIP));
+    bind_state = broadcastSocket->bind(QHostAddress(configLocalIP == "" ? localIP : configLocalIP));
+    //bind_state = broadcastSocket->bind(broadcastPort, QUdpSocket::ShareAddress);
     broadcastSocket->setSocketOption(QAbstractSocket::MulticastLoopbackOption, 0);//禁止本机接收
     //计时器实例化
     broadcastTimer = new QTimer(this);
@@ -100,9 +101,9 @@ void BoardCastListWidget::initListWidget(bool withCheckState)
     //扫描动画
     scanLabel = new QLabel(this);
     scanLabel->setText("扫描中");
+    scanLabel->setAlignment(Qt::AlignCenter);
     scanLabel->setStyleSheet("font-size:16px;color:rgb(56, 99, 154);");
-    scanLabel->setGeometry((devicesList->width()-71)/2 , (devicesList->height()-41)/2, 71, 41);
-
+    scanLabel->setGeometry(0, (devicesList->height()-60)/2, devicesList->width(), 60);
 }
 
 /**
@@ -222,7 +223,6 @@ void BoardCastListWidget::broadcastDevices()
     //字节流
     QByteArray message = structToStream(pkg);
     broadcastSocket->writeDatagram(message, message.size(),  boardcastAddress == "" ? QHostAddress::Broadcast : QHostAddress(boardcastAddress), broadcastPort);
-    //qDebug() << "boarding...";
 }
 
 /**
@@ -230,6 +230,11 @@ void BoardCastListWidget::broadcastDevices()
  */
 void BoardCastListWidget::scanChangeSlot()
 {
+    if(!bind_state)
+    {
+        scanLabel->setText("绑定UDP Socket失败\n广播无效");
+        return;
+    }
     QString currentText = scanLabel->text();
     int i = scanChangeList->indexOf(currentText);
     if(i == scanChangeList->size()-1)

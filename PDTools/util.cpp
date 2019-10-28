@@ -373,51 +373,51 @@ void Util::terminateExe(const char *exe)
 {
     HANDLE hSnapShot=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
 
-       //获得了所有进程的信息。
-       //将从hSnapShot中抽取数据到一个PROCESSENTRY32结构中
-       //这个结构代表了一个进程，是ToolHelp32 API的一部分。
-       //抽取数据靠Process32First()和Process32Next()这两个函数。
-       //这里我们仅用Process32Next()，他的原形是：
-       //BOOL WINAPI Process32Next(HANDLE hSnapshot,LPPROCESSENTRY32 lppe);
-       //我们程序的代码中加入：
-       PROCESSENTRY32* processInfo=new PROCESSENTRY32;
-       // 必须设置PROCESSENTRY32的dwSize成员的值 ;
-       processInfo->dwSize=sizeof(PROCESSENTRY32);
-       int index=0;
-       //这里我们将快照句柄和PROCESSENTRY32结构传给Process32Next()。
-       //执行之后，PROCESSENTRY32 结构将获得进程的信息。我们循环遍历，直到函数返回FALSE。
-       //printf("****************开始列举进程****************/n");
-       int ID = 0;
-       while(Process32Next(hSnapShot,processInfo)!=FALSE)
-       {
-           index++;
-           //printf("****************** %d ******************/n",index);
-           //printf("PID       Name      Current Threads/n");
-           //printf("%-15d%-25s%-4d/n",processInfo->th32ProcessID,processInfo->szExeFile,processInfo->cntThreads);
-           int size=WideCharToMultiByte(CP_ACP,0,processInfo->szExeFile,-1,NULL,0,NULL,NULL);
-           char *ch=new char[size+1];
-           if(WideCharToMultiByte(CP_ACP,0,processInfo->szExeFile,-1,ch,size,NULL,NULL))
-           {
-               if(strstr(ch, exe))//使用这段代码的时候只需要改变"cmd.exe".将其改成你要结束的进程名就可以了。
-             {
-                    ID = processInfo->th32ProcessID;
-                   // qDebug()<<"ID ="<<ID;
-                    HANDLE hProcess;
-                    // 现在我们用函数 TerminateProcess()终止进程：
-                    // 这里我们用PROCESS_ALL_ACCESS
-                    hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE,ID);
-                    //if(hProcess==NULL)
-                    //{
-                      //  printf("Unable to get handle of process: ");
-                      //  printf("Error is: %d",GetLastError());
-                    //}
-                    TerminateProcess(hProcess,0);
-                    CloseHandle(hProcess);
-               }
+    //获得了所有进程的信息。
+    //将从hSnapShot中抽取数据到一个PROCESSENTRY32结构中
+    //这个结构代表了一个进程，是ToolHelp32 API的一部分。
+    //抽取数据靠Process32First()和Process32Next()这两个函数。
+    //这里我们仅用Process32Next()，他的原形是：
+    //BOOL WINAPI Process32Next(HANDLE hSnapshot,LPPROCESSENTRY32 lppe);
+    //我们程序的代码中加入：
+    PROCESSENTRY32* processInfo = new PROCESSENTRY32;
+    // 必须设置PROCESSENTRY32的dwSize成员的值 ;
+    processInfo->dwSize = sizeof(PROCESSENTRY32);
+    int index = 0;
+    //这里我们将快照句柄和PROCESSENTRY32结构传给Process32Next()。
+    //执行之后，PROCESSENTRY32 结构将获得进程的信息。我们循环遍历，直到函数返回FALSE。
+    //printf("****************开始列举进程****************/n");
+    int ID = 0;
+    while(Process32Next(hSnapShot,processInfo) != FALSE)
+    {
+        index++;
+        //printf("****************** %d ******************/n",index);
+        //printf("PID       Name      Current Threads/n");
+        //printf("%-15d%-25s%-4d/n",processInfo->th32ProcessID,processInfo->szExeFile,processInfo->cntThreads);
+        int size = WideCharToMultiByte(CP_ACP, 0, processInfo->szExeFile, -1, NULL, 0, NULL, NULL);
+        char *ch = new char[size+1];
+        if(WideCharToMultiByte(CP_ACP, 0, processInfo->szExeFile, -1, ch, size, NULL, NULL))
+        {
+            if(strstr(ch, exe))//使用这段代码的时候只需要改变"cmd.exe".将其改成你要结束的进程名就可以了。
+            {
+                ID = processInfo->th32ProcessID;
+                // qDebug()<<"ID ="<<ID;
+                HANDLE hProcess;
+                // 现在我们用函数 TerminateProcess()终止进程：
+                // 这里我们用PROCESS_ALL_ACCESS
+                hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE,ID);
+                //if(hProcess==NULL)
+                //{
+                  //  printf("Unable to get handle of process: ");
+                  //  printf("Error is: %d",GetLastError());
+                //}
+                TerminateProcess(hProcess,0);
+                CloseHandle(hProcess);
            }
-       }
-       CloseHandle(hSnapShot);
-       delete processInfo;
+        }
+    }
+    CloseHandle(hSnapShot);
+    delete processInfo;
 }
 
 /**
@@ -469,8 +469,6 @@ void Util::getSoftwareInfomation()
 unsigned char Util::crc8(unsigned char *ptr, int len)
 {
     unsigned char crc = 0x00;
-    //unsigned char len = strlen((char*)ptr);
-    //qDebug() << "crc len" << (int)len;
     while (len--)
     {
         crc = crc_table[crc ^ *ptr++];

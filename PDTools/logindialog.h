@@ -17,6 +17,7 @@ Description: 登录窗口
 #include <QMessageBox>
 #include <QHostAddress>
 #include <QJsonObject>
+#include <QPropertyAnimation>
 #include <QJsonDocument>
 #include "util.h"
 #include "pd_Protocol.h"

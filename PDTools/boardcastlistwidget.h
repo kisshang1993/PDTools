@@ -61,6 +61,8 @@ public slots:
     void devicesListDoubleClicked(const QModelIndex &index);
 
 private:
+    //绑定状态
+    bool bind_state;
     //列表 Wdiget
     QListWidget *devicesList;
     //是否含选择框标记
